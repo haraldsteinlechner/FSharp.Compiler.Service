@@ -5067,3 +5067,76 @@ let ``Test request for parse and check doesn't check whole project`` () =
 
     ()
 
+module Project42 = 
+//    open System.IO
+//
+//    let fileName1 = Path.ChangeExtension(Path.GetTempFileName(), ".fs")
+//    let base2 = Path.GetTempFileName()
+//    let dllName = Path.ChangeExtension(base2, ".dll")
+//    let projFileName = Path.ChangeExtension(base2, ".fsproj")
+    let fileSource1 = """
+module M
+
+#I @"C:\Development\aardvark.media\bin\Release"
+#r "Aardvark.Base.dll" 
+#r "Aardvark.Base.TypeProviders.dll"
+
+#r "System.Reactive.Core.dll"
+#r "System.Reactive.Interfaces.dll"
+#r "System.Reactive.Linq.dll"
+#r "DevILSharp.dll"
+
+#r "System.Numerics.dll"
+#r "System.Drawing.dll"
+#r "System.Data.Linq.dll"
+#r "System.Data.dll"
+#r "System.Collections.Immutable.dll"
+#r "System.ComponentModel.Composition.dll"
+
+#r "Aardvark.Base.Essentials.dll"
+#r "Aardvark.Base.FSharp.dll"
+#r "Aardvark.Base.Incremental.dll"
+#r "Aardvark.Base.Runtime.dll"
+
+#r "FShade.Compiler.dll"
+#r "FShade.dll"
+
+#r "Aardvark.Base.Rendering.dll"
+
+open Aardvark.Base
+let a = V3d.III
+
+    """
+
+//    File.WriteAllText(fileName1, fileSource1)
+//    let fileNames = [fileName1]
+//    let args = mkProjectCommandLineArgs (dllName, fileNames)
+//    let options =  checker.GetProjectOptionsFromCommandLineArgs (projFileName, args)
+//    let cleanFileName a = if a = fileName1 then "file1" else "??"
+[<Test>]
+let AAAATest () =
+    // Create an interactive checker instance 
+    let checker = FSharpChecker.Create(keepAssemblyContents=true)
+
+    let parseAndCheckSingleFile (input) = 
+        let file = Path.ChangeExtension(System.IO.Path.GetTempFileName(), "fsx")  
+        File.WriteAllText(file, input)
+        // Get context representing a stand-alone (script) file
+        let projOptions = 
+            checker.GetProjectOptionsFromScript(file, input)
+            |> Async.RunSynchronously
+
+        checker.ParseAndCheckFileInProject(file,1,input,projOptions)
+        |> Async.RunSynchronously
+
+    let parseResults1, checkAnswer1 = parseAndCheckSingleFile Project42.fileSource1
+
+    let checkResults1 = 
+        match checkAnswer1 with 
+        | FSharpCheckFileAnswer.Succeeded x ->  x 
+        | _ -> failwith "unexpected aborted"
+
+    let xSymbolUse2Opt = 
+        checkResults1.GetSymbolUseAtLocation(30,5,"",["V3d.III"])
+        |> Async.RunSynchronously
+    ()

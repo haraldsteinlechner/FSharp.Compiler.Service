@@ -45,6 +45,9 @@ let x1 = C.M(arg1 = 3, arg2 = 4, arg3 = 5)
 
 let x2 = C.M(arg1 = 3, arg2 = 4, ?arg3 = Some 5)
 
+module Test =
+    [<ReflectedDefinition>]
+    let a = 123
     """
     File.WriteAllText(fileName1, fileSource1)
 
@@ -756,7 +759,6 @@ let ``Test max memory gets triggered`` () =
     reached.Value |> shouldEqual true
     let wholeProjectResults3 = checker.ParseAndCheckProject(MultiProject3.options) |> Async.RunSynchronously
     reached.Value |> shouldEqual true
-
 
 //------------------------------------------------------------------------------------
 
